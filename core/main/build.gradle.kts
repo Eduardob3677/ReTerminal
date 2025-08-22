@@ -7,18 +7,30 @@ plugins {
 }
 
 fun getGitCommitHash(): String {
+    val excludeGitInfo = System.getenv("EXCLUDE_GIT_INFO") == "true"
+    if (excludeGitInfo) {
+        return "unknown"
+    }
     return providers.exec {
         commandLine("git", "rev-parse", "--short=8", "HEAD")
     }.standardOutput.asText.get().trim()
 }
 
 fun getGitCommitDate(): String {
+    val excludeGitInfo = System.getenv("EXCLUDE_GIT_INFO") == "true"
+    if (excludeGitInfo) {
+        return "unknown"
+    }
     return providers.exec {
         commandLine("git", "show", "-s", "--format=%cI", "HEAD")
     }.standardOutput.asText.get().trim()
 }
 
 fun getFullGitCommitHash(): String {
+    val excludeGitInfo = System.getenv("EXCLUDE_GIT_INFO") == "true"
+    if (excludeGitInfo) {
+        return "unknown"
+    }
     return providers.exec {
         commandLine("git", "rev-parse", "HEAD")
     }.standardOutput.asText.get().trim()
