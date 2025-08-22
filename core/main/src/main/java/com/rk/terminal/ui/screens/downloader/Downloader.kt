@@ -52,10 +52,17 @@ fun Downloader(
                 else -> "alpine" // Default to Alpine for ALPINE and ANDROID modes
             }
 
+            val distributionUrl = abiMap[abi]!!.distributions[selectedDistribution]!!
+            val distributionExtension = when {
+                distributionUrl.endsWith(".tar.xz") -> ".tar.xz"
+                distributionUrl.endsWith(".tar.gz") -> ".tar.gz"
+                else -> ".tar.gz" // default fallback
+            }
+            
             val filesToDownload = listOf(
                 "libtalloc.so.2" to abiMap[abi]!!.talloc,
                 "proot" to abiMap[abi]!!.proot,
-                "${selectedDistribution}.tar.gz" to abiMap[abi]!!.distributions[selectedDistribution]!!
+                "${selectedDistribution}${distributionExtension}" to distributionUrl
             ).map { (name, url) -> DownloadFile(url, Rootfs.reTerminal.child(name)) }
 
             needsDownload = filesToDownload.any { !it.outputFile.exists() }
@@ -157,7 +164,7 @@ private val abiMap = mapOf(
         proot = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/x86_64/proot",
         distributions = mapOf(
             "alpine" to "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-minirootfs-3.21.0-x86_64.tar.gz",
-            "ubuntu" to "https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.1-base-amd64.tar.gz",
+            "ubuntu" to "https://cdimage.ubuntu.com/ubuntu-base/noble/daily/current/noble-base-amd64.tar.gz",
             "debian" to "https://github.com/debuerreotype/docker-debian-artifacts/raw/dist-amd64/bookworm/rootfs.tar.xz",
             "arch" to "https://mirror.archlinux.org/iso/latest/archlinux-bootstrap-x86_64.tar.gz",
             "kali" to "https://kali.download/base-images/kali-2024.1/kali-linux-docker-amd64.tar.xz"
@@ -168,10 +175,10 @@ private val abiMap = mapOf(
         proot = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/aarch64/proot",
         distributions = mapOf(
             "alpine" to "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/alpine-minirootfs-3.21.0-aarch64.tar.gz",
-            "ubuntu" to "https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.1-base-arm64.tar.gz",
-            "debian" to "https://github.com/debuerreotype/docker-debian-artifacts/raw/dist-arm64v8/bookworm/rootfs.tar.xz",
-            "arch" to "https://mirror.archlinux.org/iso/latest/archlinux-bootstrap-aarch64.tar.gz",
-            "kali" to "https://kali.download/base-images/kali-2024.1/kali-linux-docker-arm64.tar.xz"
+            "ubuntu" to "https://github.com/termux/proot-distro/releases/download/v4.18.0/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz",
+            "debian" to "https://github.com/termux/proot-distro/releases/download/v4.26.0/debian-trixie-aarch64-pd-v4.26.0.tar.xz",
+            "arch" to "https://github.com/termux/proot-distro/releases/download/v4.22.1/archlinux-aarch64-pd-v4.22.1.tar.xz",
+            "kali" to "http://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-arm64.tar.xz"
         )
     ),
     "armeabi-v7a" to AbiUrls(
@@ -179,10 +186,10 @@ private val abiMap = mapOf(
         proot = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/arm/proot",
         distributions = mapOf(
             "alpine" to "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/armhf/alpine-minirootfs-3.21.0-armhf.tar.gz",
-            "ubuntu" to "https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04.1-base-armhf.tar.gz",
-            "debian" to "https://github.com/debuerreotype/docker-debian-artifacts/raw/dist-arm32v7/bookworm/rootfs.tar.xz",
-            "arch" to "https://mirror.archlinux.org/iso/latest/archlinux-bootstrap-armv7h.tar.gz",
-            "kali" to "https://kali.download/base-images/kali-2024.1/kali-linux-docker-armhf.tar.xz"
+            "ubuntu" to "https://github.com/termux/proot-distro/releases/download/v4.18.0/ubuntu-noble-arm-pd-v4.18.0.tar.xz",
+            "debian" to "https://github.com/termux/proot-distro/releases/download/v4.26.0/debian-trixie-arm-pd-v4.26.0.tar.xz",
+            "arch" to "https://github.com/termux/proot-distro/releases/download/v4.22.1/archlinux-arm-pd-v4.22.1.tar.xz",
+            "kali" to "http://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-armhf.tar.xz"
         )
     )
 )

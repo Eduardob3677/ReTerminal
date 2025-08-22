@@ -9,15 +9,27 @@ DISTRIBUTION_NAME=""
 if [ -f "$PREFIX/files/alpine.tar.gz" ]; then
     ROOTFS_FILE="alpine.tar.gz"
     DISTRIBUTION_NAME="alpine"
+elif [ -f "$PREFIX/files/ubuntu.tar.xz" ]; then
+    ROOTFS_FILE="ubuntu.tar.xz"
+    DISTRIBUTION_NAME="ubuntu"
 elif [ -f "$PREFIX/files/ubuntu.tar.gz" ]; then
     ROOTFS_FILE="ubuntu.tar.gz"
     DISTRIBUTION_NAME="ubuntu"
+elif [ -f "$PREFIX/files/debian.tar.xz" ]; then
+    ROOTFS_FILE="debian.tar.xz"
+    DISTRIBUTION_NAME="debian"
 elif [ -f "$PREFIX/files/debian.tar.gz" ]; then
     ROOTFS_FILE="debian.tar.gz"
     DISTRIBUTION_NAME="debian"
+elif [ -f "$PREFIX/files/arch.tar.xz" ]; then
+    ROOTFS_FILE="arch.tar.xz"
+    DISTRIBUTION_NAME="arch"
 elif [ -f "$PREFIX/files/arch.tar.gz" ]; then
     ROOTFS_FILE="arch.tar.gz"
     DISTRIBUTION_NAME="arch"
+elif [ -f "$PREFIX/files/kali.tar.xz" ]; then
+    ROOTFS_FILE="kali.tar.xz"
+    DISTRIBUTION_NAME="kali"
 elif [ -f "$PREFIX/files/kali.tar.gz" ]; then
     ROOTFS_FILE="kali.tar.gz"
     DISTRIBUTION_NAME="kali"
