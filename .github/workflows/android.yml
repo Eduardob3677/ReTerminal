@@ -1,18 +1,16 @@
 name: Android CI
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
       - dev
     paths-ignore:
       - '**/*.md'
-  workflow_dispatch:
-
 jobs:
   build-release:
     name: Build Release
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
