@@ -7,30 +7,21 @@ plugins {
 }
 
 fun getGitCommitHash(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
+    return providers.exec {
         commandLine("git", "rev-parse", "--short=8", "HEAD")
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
+    }.standardOutput.asText.get().trim()
 }
 
 fun getGitCommitDate(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
+    return providers.exec {
         commandLine("git", "show", "-s", "--format=%cI", "HEAD")
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
+    }.standardOutput.asText.get().trim()
 }
 
 fun getFullGitCommitHash(): String {
-    val stdout = ByteArrayOutputStream()
-    exec {
+    return providers.exec {
         commandLine("git", "rev-parse", "HEAD")
-        standardOutput = stdout
-    }
-    return stdout.toString().trim()
+    }.standardOutput.asText.get().trim()
 }
 
 
