@@ -2,11 +2,6 @@ name: Android CI
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-      - master
-      - dev
       
 jobs:
   build-release:
@@ -22,33 +17,30 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Decode and create xed.keystore
-        run: echo "${{ secrets.KEYSTORE }}" | base64 -d > /tmp/xed.keystore
+     # - name: Decode and create xed.keystore
+     #   run: echo "${{ secrets.KEYSTORE }}" | base64 -d > /tmp/xed.keystore
 
-      - name: Decode and create signing.properties
-        run: echo "${{ secrets.PROP }}" | base64 -d > /tmp/signing.properties
+   #   - name: Decode and create signing.properties
+   #     run: echo "${{ secrets.PROP }}" | base64 -d > /tmp/signing.properties
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Set Commit Hash
-        id: commit_hash
-        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+   #   - name: Set Commit Hash
+  #      id: commit_hash
+    #    run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       - name: Build with Gradle
-        run: ./gradlew assembleFdroidRelease && mv app/build/outputs/apk/Fdroid/release/*.apk app/reterminal-${{ env.COMMIT_HASH }}.apk
-        env:
-          KEYSTORE_FILE: /tmp/xed.keystore
-          SIGNING_PROPERTIES_FILE: /tmp/signing.properties
+        run: ./gradlew assembleFdroidRelease && mv app/build/outputs/apk/Fdroid/release/*.apk app/reterminal.apk
         continue-on-error: false
 
       - name: Archive APK
         uses: actions/upload-artifact@v4
         with:
           name: Karbon-Release
-          path: app/reterminal-${{ env.COMMIT_HASH }}.apk
+          path: app/reterminal.apk
 
-      - name: Delete xed.keystore and signing.properties
-        run: rm /tmp/xed.keystore /tmp/signing.properties
+   #   - name: Delete xed.keystore and signing.properties
+   #     run: rm /tmp/xed.keystore /tmp/signing.properties
 
     
