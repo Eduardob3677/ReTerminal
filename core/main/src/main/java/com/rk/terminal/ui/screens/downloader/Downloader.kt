@@ -15,6 +15,8 @@ import com.rk.libcommons.*
 import com.rk.terminal.ui.activities.terminal.MainActivity
 import com.rk.terminal.ui.screens.terminal.Rootfs
 import com.rk.terminal.ui.screens.terminal.TerminalScreen
+import com.rk.terminal.ui.screens.settings.WorkingMode
+import com.rk.settings.Settings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -42,10 +44,25 @@ fun Downloader(
                 it in abiMap
             } ?: throw RuntimeException("Unsupported CPU")
 
+            val selectedDistribution = when (Settings.working_Mode) {
+                WorkingMode.UBUNTU -> "ubuntu"
+                WorkingMode.DEBIAN -> "debian"
+                WorkingMode.ARCH -> "arch"
+                WorkingMode.KALI -> "kali"
+                else -> "alpine" // Default to Alpine for ALPINE and ANDROID modes
+            }
+
+            val distributionUrl = abiMap[abi]!!.distributions[selectedDistribution]!!
+            val distributionExtension = when {
+                distributionUrl.endsWith(".tar.xz") -> ".tar.xz"
+                distributionUrl.endsWith(".tar.gz") -> ".tar.gz"
+                else -> ".tar.gz" // default fallback
+            }
+            
             val filesToDownload = listOf(
                 "libtalloc.so.2" to abiMap[abi]!!.talloc,
                 "proot" to abiMap[abi]!!.proot,
-                "alpine.tar.gz" to abiMap[abi]!!.alpine
+                "${selectedDistribution}${distributionExtension}" to distributionUrl
             ).map { (name, url) -> DownloadFile(url, Rootfs.reTerminal.child(name)) }
 
             needsDownload = filesToDownload.any { !it.outputFile.exists() }
@@ -145,18 +162,50 @@ private val abiMap = mapOf(
     "x86_64" to AbiUrls(
         talloc = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/x86_64/libtalloc.so.2",
         proot = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/x86_64/proot",
-        alpine = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-minirootfs-3.21.0-x86_64.tar.gz"
+        distributions = mapOf(
+            "alpine" to "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/x86_64/alpine-minirootfs-3.21.0-x86_64.tar.gz",
+            "ubuntu" to "https://cdimage.ubuntu.com/ubuntu-base/noble/daily/current/noble-base-amd64.tar.gz",
+            "debian" to "https://github.com/debuerreotype/docker-debian-artifacts/raw/dist-amd64/bookworm/rootfs.tar.xz",
+            "arch" to "https://mirror.archlinux.org/iso/latest/archlinux-bootstrap-x86_64.tar.gz",
+            "kali" to "https://kali.download/base-images/kali-2024.1/kali-linux-docker-amd64.tar.xz"
+        )
     ),
     "arm64-v8a" to AbiUrls(
         talloc = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/aarch64/libtalloc.so.2",
         proot = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/aarch64/proot",
-        alpine = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/alpine-minirootfs-3.21.0-aarch64.tar.gz"
+        distributions = mapOf(
+            "alpine" to "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/aarch64/alpine-minirootfs-3.21.0-aarch64.tar.gz",
+            "ubuntu" to "https://github.com/termux/proot-distro/releases/download/v4.18.0/ubuntu-noble-aarch64-pd-v4.18.0.tar.xz",
+            "debian" to "https://github.com/termux/proot-distro/releases/download/v4.26.0/debian-trixie-aarch64-pd-v4.26.0.tar.xz",
+            "arch" to "https://github.com/termux/proot-distro/releases/download/v4.22.1/archlinux-aarch64-pd-v4.22.1.tar.xz",
+            "kali" to "http://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-arm64.tar.xz"
+        )
     ),
     "armeabi-v7a" to AbiUrls(
         talloc = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/arm/libtalloc.so.2",
         proot = "https://raw.githubusercontent.com/Xed-Editor/Karbon-PackagesX/main/arm/proot",
-        alpine = "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/armhf/alpine-minirootfs-3.21.0-armhf.tar.gz"
+        distributions = mapOf(
+            "alpine" to "https://dl-cdn.alpinelinux.org/alpine/v3.21/releases/armhf/alpine-minirootfs-3.21.0-armhf.tar.gz",
+            "ubuntu" to "https://github.com/termux/proot-distro/releases/download/v4.18.0/ubuntu-noble-arm-pd-v4.18.0.tar.xz",
+            "debian" to "https://github.com/termux/proot-distro/releases/download/v4.26.0/debian-trixie-arm-pd-v4.26.0.tar.xz",
+            "arch" to "https://github.com/termux/proot-distro/releases/download/v4.22.1/archlinux-arm-pd-v4.22.1.tar.xz",
+            "kali" to "http://kali.download/nethunter-images/current/rootfs/kali-nethunter-rootfs-minimal-armhf.tar.xz"
+        )
     )
 )
 
-private data class AbiUrls(val talloc: String, val proot: String, val alpine: String)
+private data class AbiUrls(val talloc: String, val proot: String, val distributions: Map<String, String>)
+
+private data class DistributionInfo(
+    val name: String,
+    val packageManager: String,
+    val initScript: String
+)
+
+private val distributionMap = mapOf(
+    WorkingMode.ALPINE to DistributionInfo("alpine", "apk", "init-alpine.sh"),
+    WorkingMode.UBUNTU to DistributionInfo("ubuntu", "apt", "init-ubuntu.sh"),
+    WorkingMode.DEBIAN to DistributionInfo("debian", "apt", "init-debian.sh"),
+    WorkingMode.ARCH to DistributionInfo("arch", "pacman", "init-arch.sh"),
+    WorkingMode.KALI to DistributionInfo("kali", "apt", "init-kali.sh")
+)
